@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
 import authRoutes from './presentation/routes/auth.routes'
+import passport from './infrastructure/services/Passport'
 
 import { connectDB } from "./infrastructure/database/mongoose-client";
 
@@ -15,7 +16,10 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json()); 
+
+app.use(passport.initialize())
 app.use('/',authRoutes)
+
 
 
 

@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
 
     localStorage.setItem("resetEmail", email)
 
-    window.location.href = "/reset-password"
+window.location.href = "/verify-otp?mode=reset"
 
   }
 

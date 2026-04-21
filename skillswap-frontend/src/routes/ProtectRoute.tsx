@@ -1,31 +1,23 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom"
+import { ReactNode } from "react"
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  role?: "user" | "admin";
+interface Props {
+  children: ReactNode
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, role = "user" }) => {
-  const token = localStorage.getItem("token");
-  const storedRole = localStorage.getItem("role");
+export const ProtectedRoute = ({
+  children
+}: Props) => {
 
-  console.log("ProtectedRoute rendered → token:", token, "storedRole:", storedRole, "expected role:", role);
+  const token =
+    localStorage.getItem("token")
 
-  // If no token, redirect to signup
   if (!token) {
-    console.warn("No token found → redirecting to /signup");
-    return <Navigate to="/signup" replace />;
+
+    return <Navigate to="/login" />
+
   }
 
-  // If role mismatch (for admin vs user)
-  if (storedRole && storedRole !== role) {
-    console.warn("Role mismatch → redirecting to home");
-    return <Navigate to="/" replace />;
-  }
+  return children
 
-  // ✅ If checks pass → render the actual page
-  return <>{children}</>;
-};
-
-export default ProtectedRoute;
+}

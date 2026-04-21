@@ -8,6 +8,8 @@ import { FaGithub, FaLinkedin } from "react-icons/fa"
 
 import Header from "../hooks/Header"
 import Footer from "../hooks/Footer"
+import { useNavigate } from "react-router-dom"
+
 
 import { useLogin } from "../hooks/Auth/UseLogin"
 
@@ -45,6 +47,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 export default function LoginPage() {
 
+    const navigate = useNavigate()
   const { login, loading, error } = useLogin()
 
   const [email, setEmail] = useState("")
@@ -59,9 +62,12 @@ export default function LoginPage() {
       password
     })
 
-    if (ok) {
-      window.location.href = "/dashboard"
-    }
+
+if (ok) {
+
+  navigate("/")
+
+}
   }
 
   const handleGoogleLogin = () => {
@@ -72,9 +78,7 @@ export default function LoginPage() {
     window.location.href = "http://localhost:5000/auth/github"
   }
 
-  const handleLinkedinLogin = () => {
-    window.location.href = "http://localhost:5000/auth/linkedin"
-  }
+ 
 
   return (
 
@@ -186,13 +190,6 @@ export default function LoginPage() {
                 <FaGithub size={22} color="white" />
               </button>
 
-              <button
-                type="button"
-                onClick={handleLinkedinLogin}
-                className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#0A66C2] shadow hover:scale-110 transition"
-              >
-                <FaLinkedin size={22} color="white" />
-              </button>
 
             </div>
            

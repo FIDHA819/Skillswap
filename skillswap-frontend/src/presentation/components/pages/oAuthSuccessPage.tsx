@@ -1,11 +1,17 @@
 import { useEffect } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useNavigate }
+from "react-router-dom"
 
 export default function OAuthSuccessPage() {
 
-  const [params] = useSearchParams()
+  const navigate = useNavigate()
 
   useEffect(() => {
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      )
 
     const token =
       params.get("token")
@@ -17,13 +23,12 @@ export default function OAuthSuccessPage() {
         token
       )
 
-      window.location.href =
-        "/dashboard"
+      navigate("/")
 
     }
 
   }, [])
 
-  return <p>Logging you in...</p>
+  return <p>Logging in...</p>
 
 }

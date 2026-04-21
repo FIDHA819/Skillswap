@@ -3,7 +3,7 @@
 
 import React, { useState, FormEvent } from "react"
 import { Link } from "react-router-dom"
-import { Mail, Lock, User, CheckCircle, AlertTriangle } from "lucide-react"
+import { Mail, Lock, User, CheckCircle, AlertTriangle ,Eye,EyeOff } from "lucide-react"
 import { SVGProps } from "react"
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub } from "react-icons/fa"
@@ -27,10 +27,9 @@ interface InputFieldProps {
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   placeholder: string
+  showToggle?: boolean
+  toggleVisibility?: () => void
 }
-
-const logoImg = "/assets/logo.png"
-const bgImg = "/assets/bg.jpeg"
 
 const InputField: React.FC<InputFieldProps> = ({
   icon: Icon,
@@ -38,6 +37,8 @@ const InputField: React.FC<InputFieldProps> = ({
   value,
   onChange,
   placeholder,
+  showToggle,
+  toggleVisibility,
 }) => (
   <div className="relative w-full">
     <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-400" />
@@ -48,10 +49,25 @@ const InputField: React.FC<InputFieldProps> = ({
       onChange={onChange}
       placeholder={placeholder}
       required
-      className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/20 placeholder-gray-300 text-sm outline-none border border-white/30 focus:border-blue-400 transition-all duration-300 shadow-sm backdrop-blur-sm text-white"
+      className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/20 placeholder-gray-300 text-sm outline-none border border-white/30 focus:border-blue-400 transition-all duration-300 shadow-sm backdrop-blur-sm text-white"
     />
+
+    {showToggle && (
+      <button
+        type="button"
+        onClick={toggleVisibility}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-white"
+      >
+        {type === "password" ? <Eye /> : <EyeOff />}
+      </button>
+    )}
   </div>
 )
+
+const logoImg = "/assets/logo.png"
+const bgImg = "/assets/bg.jpeg"
+
+
 
 const MessageDisplay: React.FC<{ message: Message | null }> = ({
   message,
@@ -81,18 +97,15 @@ const MessageDisplay: React.FC<{ message: Message | null }> = ({
 }
 const handleGoogleSignup = () => {
   window.location.href =
-    "http://localhost:5000/google"
+    "http://localhost:5000/auth/google"
 }
 
 const handleGithubSignup = () => {
   window.location.href =
-    "http://localhost:5000/github"
+    "http://localhost:5000/auth/github"
 }
 
-const handleLinkedinSignup = () => {
-  window.location.href =
-    "http://localhost:5000/linkedin"
-}
+
 const SignupPage: React.FC = () => {
    const navigate=useNavigate()
   const [fullName, setFullName] =
@@ -100,7 +113,8 @@ const SignupPage: React.FC = () => {
 
   const [email, setEmail] =
     useState("")
-
+const [showPassword, setShowPassword] = useState(false)
+const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [password, setPassword] =
     useState("")
 
@@ -127,6 +141,20 @@ const SignupPage: React.FC = () => {
       })
       return
     }
+    if (!email.includes("@")) {
+  setMessage({
+    type: "error",
+    text: "Enter valid email address",
+  })
+  return
+}
+if (password.length < 6) {
+  setMessage({
+    type: "error",
+    text: "Password must be at least 6 characters",
+  })
+  return
+}
 
     try {
      await signup({
@@ -136,7 +164,9 @@ const SignupPage: React.FC = () => {
   confirmPassword: confirmPwd
 })
 
-
+localStorage.setItem("otpExpiry",
+  String(Date.now() + 60000)
+)
 localStorage.setItem("otpEmail", email)
 
 setMessage({
@@ -145,16 +175,18 @@ setMessage({
 })
 
 setTimeout(() => {
-   navigate("/verify-otp")
+ navigate("/verify-otp?mode=signup")
 }, 800)
     } catch (error: any) {
-      setMessage({
-        type: "error",
-        text:
-          error.message ||
-          "Signup failed",
-      })
-    }
+
+  const backendMessage =
+    error.response?.data?.message
+
+  setMessage({
+    type: "error",
+    text: backendMessage || "Signup failed"
+  })
+}
   }
 
   return (
@@ -210,26 +242,28 @@ setTimeout(() => {
             />
 
             <InputField
-              icon={Lock}
-              type="password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              placeholder="Password"
-            />
+  icon={Lock}
+  type={showPassword ? "text" : "password"}
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  placeholder="Password"
+  showToggle
+  toggleVisibility={() =>
+    setShowPassword(!showPassword)
+  }
+/>
 
-            <InputField
-              icon={Lock}
-              type="password"
-              value={confirmPwd}
-              onChange={(e) =>
-                setConfirmPwd(
-                  e.target.value
-                )
-              }
-              placeholder="Confirm Password"
-            />
+<InputField
+  icon={Lock}
+  type={showConfirmPassword ? "text" : "password"}
+  value={confirmPwd}
+  onChange={(e) => setConfirmPwd(e.target.value)}
+  placeholder="Confirm Password"
+  showToggle
+  toggleVisibility={() =>
+    setShowConfirmPassword(!showConfirmPassword)
+  }
+/>
 
             <button
               type="submit"
@@ -268,14 +302,6 @@ setTimeout(() => {
     <FaGithub size={22} color="white" />
   </button>
 
-  {/* LinkedIn */}
-  <button
-    type="button"
-    onClick={handleLinkedinSignup}
-    className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#0A66C2] shadow hover:scale-105 transition"
-  >
-    <FaLinkedin size={22} color="white" />
-  </button>
 
 </div>
 <p className="text-center text-white/90 text-sm mt-2">

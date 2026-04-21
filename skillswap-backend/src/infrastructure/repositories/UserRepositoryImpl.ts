@@ -10,40 +10,93 @@ from "../database/models/UserModel"
 export class UserRepositoryImpl
 implements IUserRepository {
 
-  async findByEmail(email: string)
-  : Promise<User | null> {
+  private userModel = UserModel
 
-    const user =
-      await UserModel.findOne({ email })
-
-    if (!user) return null
+  private toDomain(userDoc: any): User {
 
     return new User(
-  user.fullName,
-  user.email,
-  user.password,
-  user.isVerified,
-  user.otp,
-  user.otpExpires
-)
-  }
+      userDoc._id.toString(),
+      userDoc.fullName,
+      userDoc.email,
+      userDoc.password,
+      userDoc.isVerified,
+      userDoc.otp ?? undefined,
+      userDoc.otpExpires ?? undefined
 
-  async create(user: User)
-  : Promise<void> {
-
-    await UserModel.create(user)
+    )
 
   }
-  async verifyUser(email: string)
-: Promise<void> {
 
-  await UserModel.updateOne(
+  async findByEmail(email: string): Promise<User | null> {
+
+    const userDoc =
+      await this.userModel.findOne({ email })
+
+    if (!userDoc) return null
+
+    return this.toDomain(userDoc)
+
+  }
+
+  async create(user: any) {
+
+    await this.userModel.create(user)
+
+  }
+
+  async verifyUser(email: string) {
+
+    await this.userModel.updateOne(
+
+      { email },
+
+      {
+
+        isVerified: true,
+        otp: null,
+        otpExpires: null
+
+      }
+
+    )
+
+  }
+
+  async updateOtp(
+
+    email: string,
+    otp: string,
+    expiry: Date
+
+  ) {
+
+    await this.userModel.updateOne(
+
+      { email },
+
+      {
+
+        otp,
+        otpExpires: expiry
+
+      }
+
+    )
+
+  }
+  
+  async updatePassword(
+  email: string,
+  password: string
+) {
+
+  await this.userModel.updateOne(
 
     { email },
 
     {
 
-      isVerified: true,
+      password,
       otp: null,
       otpExpires: null
 

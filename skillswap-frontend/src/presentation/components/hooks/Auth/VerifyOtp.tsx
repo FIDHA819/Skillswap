@@ -12,26 +12,38 @@ export const useVerifyOtp = () => {
 
   const verifyOtp = async (data) => {
 
-    setLoading(true)
+  setLoading(true)
 
-    try {
+  try {
 
-      const res = await verifyOtpUseCase.execute(data)
+    const res =
+      await verifyOtpUseCase.execute(data)
 
-      localStorage.setItem("token", res.token)
-      localStorage.setItem("user", JSON.stringify(res.user))
+    localStorage.setItem(
+      "token",
+      res.token
+    )
 
-      return true
+    return true
 
-    } finally {
+  } catch (error: any) {
 
-      setLoading(false)
+    throw new Error(
 
-    }
+      error.response?.data?.message ||
+      "Invalid OTP"
+
+    )
+
+  } finally {
+
+    setLoading(false)
 
   }
 
+}
   const resendOtp = async (data) => {
+    
 
     return repo.resendOtp(data)
 

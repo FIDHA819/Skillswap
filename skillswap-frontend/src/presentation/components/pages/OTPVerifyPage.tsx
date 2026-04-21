@@ -1,5 +1,6 @@
 import { useState, FormEvent, useEffect } from "react"
 import { CheckCircle, AlertTriangle } from "lucide-react"
+import { useSearchParams } from "react-router-dom"
 
 import Header from "../hooks/Header"
 import Footer from "../hooks/Footer"
@@ -8,6 +9,7 @@ import { useVerifyOtp } from "../hooks/Auth/VerifyOtp"
 
 const logoImg = "/assets/logo.png"
 const bgImg = "/assets/bg.jpeg"
+
 
 type Message = {
   type: "error" | "success"
@@ -18,24 +20,56 @@ export default function VerifyOtpPage() {
 
   const { verifyOtp, resendOtp, loading } = useVerifyOtp()
 
+  const [params]=useSearchParams()
+  const mode=params.get('mode')
+
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""])
   const [message, setMessage] = useState<Message | null>(null)
-  const [timer, setTimer] = useState(60)
+const [timer, setTimer] = useState(() => {
 
-  const email = localStorage.getItem("otpEmail") || ""
+  const expiry =
+    localStorage.getItem("otpExpiry")
 
-  // ✅ countdown timer
+  if (!expiry) return 60
+
+  const remaining =
+    Math.floor((Number(expiry) - Date.now()) / 1000)
+
+  return remaining > 0 ? remaining : 0
+})
+
+  
+  const email =
+  localStorage.getItem("otpEmail") ||
+  localStorage.getItem("resetEmail") ||
+  ""
+
+  //countdown timer
   useEffect(() => {
 
-    if (timer <= 0) return
+  if (timer <= 0) return
 
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1)
-    }, 1000)
+  const interval = setInterval(() => {
 
-    return () => clearInterval(interval)
+    setTimer((prev) => {
 
-  }, [timer])
+      const updated = prev - 1
+
+      if (updated <= 0) {
+
+        localStorage.removeItem("otpExpiry")
+
+        return 0
+      }
+
+      return updated
+    })
+
+  }, 1000)
+
+  return () => clearInterval(interval)
+
+}, [timer])
 
   // ✅ handle OTP input
   const handleChange = (index: number, value: string) => {
@@ -56,42 +90,54 @@ export default function VerifyOtpPage() {
   // ✅ submit OTP
   const handleSubmit = async (e: FormEvent) => {
 
-    e.preventDefault()
+  e.preventDefault()
 
-    setMessage(null)
+  setMessage(null)
 
-    const otpValue = otp.join("")
+  const otpValue = otp.join("")
 
-    try {
+  try {
 
-      const ok = await verifyOtp({
-        email,
-        otp: otpValue
-      })
+    const ok = await verifyOtp({
+      email,
+      otp: otpValue
+    },mode)
 
-      if (ok) {
-
-        setMessage({
-          type: "success",
-          text: "OTP verified successfully!"
-        })
-
-        setTimeout(() => {
-          window.location.href = "/dashboard"
-        }, 1000)
-
-      }
-
-    } catch (err: any) {
+    if (ok) {
 
       setMessage({
-        type: "error",
-        text: err.message || "Invalid OTP"
+        type: "success",
+        text: "OTP verified successfully!"
       })
+
+      setTimeout(() => {
+
+        if (mode === "reset") {
+
+          window.location.href = "/reset-password"
+
+        }
+
+        else {
+
+          window.location.href = "/home"
+
+        }
+
+      }, 1000)
 
     }
 
+  } catch (err: any) {
+
+    setMessage({
+      type: "error",
+      text: err.message || "Invalid OTP"
+    })
+
   }
+
+}
 
   // ✅ resend OTP
   const handleResend = async () => {
@@ -100,7 +146,7 @@ export default function VerifyOtpPage() {
 
     try {
 
-      await resendOtp({ email })
+      await resendOtp({ email,mode })
 
       setMessage({
         type: "success",

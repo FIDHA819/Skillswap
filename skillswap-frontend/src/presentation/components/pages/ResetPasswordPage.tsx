@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react"
-import { KeyRound, Lock } from "lucide-react"
+import { Lock } from "lucide-react"
 import { SVGProps } from "react"
 import Header from "../hooks/Header"
 import Footer from "../hooks/Footer"
@@ -7,8 +7,6 @@ import { useResetPassword } from "../hooks/Auth/UserResetPassword"
 
 const logoImg = "/assets/logo.png"
 const bgImg = "/assets/bg.jpeg"
-
-
 
 interface InputFieldProps {
   icon: React.FC<SVGProps<SVGSVGElement>>
@@ -41,12 +39,13 @@ const InputField: React.FC<InputFieldProps> = ({
   </div>
 )
 
-export default function ResetPasswordPage() {
+export default function SetNewPasswordPage() {
 
   const { resetPassword, loading } = useResetPassword()
 
-  const [otp, setOtp] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState("")
 
   const email =
     localStorage.getItem("resetEmail")
@@ -55,14 +54,50 @@ export default function ResetPasswordPage() {
 
     e.preventDefault()
 
-    await resetPassword({
-      email,
-      otp,
-      password
-    })
+    setError("")
 
-    window.location.href =
-      "/auth/login"
+    if (!password || !confirmPassword) {
+
+      setError("All fields required")
+      return
+
+    }
+
+    if (password.length < 6) {
+
+      setError("Password must be at least 6 characters")
+      return
+
+    }
+
+    if (password !== confirmPassword) {
+
+      setError("Passwords do not match")
+      return
+
+    }
+
+    try {
+
+      await resetPassword({
+
+        email,
+        password
+
+      })
+
+      localStorage.removeItem("resetEmail")
+
+      window.location.href = "/login"
+
+    } catch (err: any) {
+
+      setError(
+        err.message ||
+        "Failed to reset password"
+      )
+
+    }
 
   }
 
@@ -70,7 +105,9 @@ export default function ResetPasswordPage() {
 
     <div
       className="relative w-full min-h-screen flex flex-col bg-cover bg-center"
-      style={{ backgroundImage: `url(${bgImg})` }}
+      style={{
+        backgroundImage: `url(${bgImg})`
+      }}
     >
 
       <Header />
@@ -85,31 +122,25 @@ export default function ResetPasswordPage() {
             className="w-12 h-12 mb-3 rounded-full border-2 border-blue-100 shadow-md"
           />
 
-          <h1 className="text-3xl font-extrabold text-white text-center mb-1 tracking-tight leading-8">
-            Reset
+          <h1 className="text-3xl font-extrabold text-white text-center mb-1">
+
+            Set
             <span className="text-blue-200">
               Password
             </span>
+
           </h1>
 
           <p className="text-[15px] font-medium text-white/90 mb-5 text-center">
-            Enter OTP and set your new password
+
+            Enter your new password
+
           </p>
 
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-5 w-full"
           >
-
-            <InputField
-              icon={KeyRound}
-              type="text"
-              value={otp}
-              onChange={(e) =>
-                setOtp(e.target.value)
-              }
-              placeholder="Enter OTP"
-            />
 
             <InputField
               icon={Lock}
@@ -121,6 +152,26 @@ export default function ResetPasswordPage() {
               placeholder="New Password"
             />
 
+            <InputField
+              icon={Lock}
+              type="password"
+              value={confirmPassword}
+              onChange={(e) =>
+                setConfirmPassword(e.target.value)
+              }
+              placeholder="Confirm Password"
+            />
+
+            {error && (
+
+              <p className="text-red-400 text-sm text-center">
+
+                {error}
+
+              </p>
+
+            )}
+
             <button
               disabled={loading}
               className="mt-2 w-full h-12 bg-gradient-to-r from-blue-700 to-blue-500 text-white rounded-xl font-bold shadow hover:shadow-lg transition disabled:opacity-60"
@@ -128,7 +179,7 @@ export default function ResetPasswordPage() {
 
               {loading
                 ? "Resetting..."
-                : "Reset Password"}
+                : "Set New Password"}
 
             </button>
 

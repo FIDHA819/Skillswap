@@ -3,6 +3,8 @@ import {
   loginApi,
   verifyOtpApi,
   resendOtpApi,
+  forgotPasswordApi,
+  resetPasswordApi
 } from "../api/authapi"
 
 import type {
@@ -11,22 +13,46 @@ import type {
 } from "../../domain/repositories/AuthRepository"
 
 export class AuthRepositoryImpl
-  implements AuthRepository
-{
+implements AuthRepository {
+
   async signup(data) {
-    const res = await signupApi(data)
+
+    const res =
+      await signupApi(data)
 
     return res.data
+
   }
 
-  async login(data): Promise<AuthResponse> {
-    const res = await loginApi(data)
+  async login(data) {
 
-    return res.data
+    try {
+
+      const response =
+        await loginApi(data)
+
+      return response.data
+
+    }
+
+    catch (error: any) {
+
+      throw new Error(
+
+        error.response?.data?.message ||
+
+        "Login failed"
+
+      )
+
+    }
+
   }
 
   async verifyOtp(data): Promise<AuthResponse> {
-    const res = await verifyOtpApi(data)
+
+    const res =
+      await verifyOtpApi(data)
 
     const body =
       res.data?.body || res.data
@@ -42,9 +68,11 @@ export class AuthRepositoryImpl
       {}
 
     return {
+
       token,
 
       user: {
+
         id:
           user?.id ||
           user?._id ||
@@ -60,31 +88,32 @@ export class AuthRepositoryImpl
         role:
           user?.role ||
           "student",
-      },
+
+      }
+
     }
+
   }
 
   async resendOtp(data) {
+
     const res =
       await resendOtpApi(data)
 
     return res.data
+
   }
+
   async requestPasswordReset(data) {
 
-  return api.post(
-    "/auth/forgot-password",
-    data
-  )
+    await forgotPasswordApi(data)
 
-}
+  }
 
-async resetPassword(data) {
+  async resetPassword(data) {
 
-  return api.post(
-    "/auth/reset-password",
-    data
-  )
+  await resetPasswordApi(data)
 
-}
+  }
+
 }
