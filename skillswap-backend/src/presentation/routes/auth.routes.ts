@@ -3,6 +3,7 @@ import express from "express"
 import { AuthController }
 from "../controllers/auth.controller"
 import passport from '../../infrastructure/services/Passport'
+import { authMiddleware } from "../middleware/auth.middleware"
 
 const router = express.Router()
 
@@ -81,4 +82,10 @@ router.get(
 
 )
 
+
+router.get(
+  "/me",
+  authMiddleware,
+  AuthController.me
+)
 export default router

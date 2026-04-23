@@ -18,9 +18,13 @@ from "../../application/Auth/use-cases/oAuthLoginUseCase"
 
 import { ResetPasswordUseCase }   
 from "../../application/Auth/use-cases/ResetPasswordUseCase"
+import { GetCurrentUserUseCase } from "../../application/Auth/GetCurrentUserUseCase"
+
 
 
 import { AppError } from "../../core/errors/AppError"
+import { AuthRequest} from "../../types/AuthRequest"
+
 
 export class AuthController {
 
@@ -170,7 +174,44 @@ static async login(req: Request, res: Response) {
   }
 
 }
+static async me(req: Request, res: Response) {
 
+  try {
+
+    const userId =
+      (req as AuthRequest).user?.id
+
+    if (!userId) {
+
+      return res.status(401).json({
+        message: "Unauthorized"
+      })
+
+    }
+
+    const repo = new UserRepositoryImpl()
+
+    const useCase =
+      new GetCurrentUserUseCase(repo)
+
+    const user =
+      await useCase.execute(userId)
+
+    return res.json(user)
+
+  }
+
+  catch (error) {
+
+    console.error(error)
+
+    return res.status(500).json({
+      message: "Failed to fetch user"
+    })
+
+  }
+
+}
 static async requestPasswordReset(
   req: Request,
   res: Response

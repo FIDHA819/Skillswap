@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 
-const UserSchema = new mongoose.Schema({
+
+const userSchema = new mongoose.Schema({
 
   fullName: {
     type: String,
@@ -18,21 +19,47 @@ const UserSchema = new mongoose.Schema({
     required: true
   },
 
- isVerified: {
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
 
-  type: Boolean,
+  otp: {
+    type: String,
+    default: null
+  },
 
-  default: false
+  otpExpires: {
+    type: Date,
+    default: null
+  },
 
-},
+  // ✅ ADD THESE NEW FIELDS
 
-  otp: String,
+  skillsToTeach: {
+    type: [String],
+    default: []
+  },
 
-otpExpires: Date,
+  skillsToLearn: {
+    type: [String],
+    default: []
+  },
 
+  role: {
+    type: String,
+    enum: ["learner", "teacher"],
+    default: "learner"
+  },
 
+  profileCompleted: {
+    type: Boolean,
+    default: false
+  }
 
+}, {
+  timestamps: true
 })
 
 export const UserModel =
-  mongoose.model("User", UserSchema)
+  mongoose.model("User", userSchema)

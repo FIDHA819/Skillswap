@@ -1,8 +1,8 @@
 import { IUserRepository }
-from "../../../domain/User/repositories/IUserRepository"
+from "../../../domain/repositories/IUserRepository"
 
 import { User }
-from "../../../domain/User/entities/User"
+from "../../../domain/entities/User"
 
 import { HashService }
 from "../../../infrastructure/services/HashServices"

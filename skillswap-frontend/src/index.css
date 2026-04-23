@@ -1,2 +1,5 @@
 
 @import "tailwindcss";
+.glass-card{
+@apply p-6 rounded-2xl bg-white shadow-lg text-center;
+}

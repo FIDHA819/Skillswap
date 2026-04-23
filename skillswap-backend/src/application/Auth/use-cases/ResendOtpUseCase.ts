@@ -1,5 +1,5 @@
 import { IUserRepository }
-from "../../../domain/User/repositories/IUserRepository"
+from "../../../domain/repositories/IUserRepository"
 
 import { AppError }
 from "../../../core/errors/AppError"

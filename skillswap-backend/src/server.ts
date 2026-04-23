@@ -3,9 +3,12 @@ import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
 import authRoutes from './presentation/routes/auth.routes'
-import passport from './infrastructure/services/Passport'
+import { learnerRoutes } from "./presentation/routes/learner.routes";
 
+import passport from './infrastructure/services/Passport'
+import { LearnerDashboardController } from "./presentation/controllers/LearnerDashboard.controller";
 import { connectDB } from "./infrastructure/database/mongoose-client";
+
 
 
 
@@ -19,7 +22,7 @@ app.use(express.json());
 
 app.use(passport.initialize())
 app.use('/',authRoutes)
-
+app.use("/learner",learnerRoutes)
 
 
 

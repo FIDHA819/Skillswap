@@ -11,8 +11,9 @@ import Signup from "./presentation/components/pages/SignUpPage";
 import ForgotPasswordPage from "./presentation/components/pages/ForgotPasswordPage";
 import ResetPasswordPage from "./presentation/components/pages/ResetPasswordPage";
 import VerifyOtpPage from "./presentation/components/pages/OTPVerifyPage";
-import HomePage from "./presentation/components/pages/HomePage";
+import HomePage from "./presentation/components/pages/LandingPage";
 import OAuthSuccessPage from "./presentation/components/pages/oAuthSuccessPage";
+import LearnerDashboardPage from "./presentation/components/pages/LearnerDashboardPage"
 
 const App: React.FC = () => {
 
@@ -23,14 +24,14 @@ const App: React.FC = () => {
       <Routes>
 
         {/* Default Route */}
-  <Route
-          path="/"
-          element={
-            token
-              ? <HomePage />
-              : <Navigate to="/login" />
-          }
-        />
+ <Route
+  path="/"
+  element={
+    token
+      ? <LearnerDashboardPage />
+      : <HomePage />
+  }
+/>
 
         {/* Public Routes */}
         <Route path="/signup" element={<Signup />} />
