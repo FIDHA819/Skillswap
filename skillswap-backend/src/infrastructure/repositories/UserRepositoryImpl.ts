@@ -118,20 +118,48 @@ export class UserRepositoryImpl implements IUserRepository {
 
   }
 
-  async updateProfileCompletion(
-    email: string,
-    completed: boolean
-  ): Promise<void> {
+ async updateProfileCompletion(
+  userId: string,
+  completed: boolean
+): Promise<void> {
 
-    await this.userModel.updateOne(
-      { email },
-      {
-        profileCompleted: completed
-      }
-    )
+  await this.userModel.updateOne(
+    { _id: userId },
+    {
+      profileCompleted: completed
+    }
+  )
 
-  }
+}
+  async updateEmail(
 
+userId:string,
+
+email:string
+
+){
+
+return await UserModel.findByIdAndUpdate(
+
+userId,
+
+{
+
+email,
+
+updatedAt:new Date()
+
+},
+
+{
+
+new:true
+
+}
+
+)
+
+}
   async switchRole(
     email: string,
     role: "learner" | "teacher"

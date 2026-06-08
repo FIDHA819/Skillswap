@@ -18,5 +18,12 @@ export class MailService {
       subject: "OTP Verification",
       text: `Your OTP is ${otp}`
     })
+    transporter.verify((error, success) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log("SMTP Ready");
+  }
+});
   }
 }

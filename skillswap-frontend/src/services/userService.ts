@@ -1,37 +1,145 @@
-// src/services/userService.ts
-import api from "../infrastructure/api/axios";
-const API_URL = "http://localhost:5000/api/users";
+import axios from "axios"
+
+export type UserProfile = {
+
+_id:string
+
+id:string
+
+userId:string
+
+email:string
+
+fullName:string
+
+nickname:string
+
+photoUrl?:string
+
+gender:string
+
+country:string
+
+language:string
+
+dob:string
+
+qualification:string
+
+profileCompleted:boolean
+
+createdAt:string
+
+updatedAt:string
+
+isVerified?:boolean
+
+role?:"learner"|"teacher"
+
+}
+
+const API =
+"http://localhost:5000"
 
 export const userService = {
-  getProfile: async (token?: string) => {
-    const res = await api.get(`${API_URL}/me`, {
-      headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-    });
-    return res.data;
-  },
 
-  updateProfile: async (data: FormData | Record<string, any>, token?: string) => {
-    const authToken = token || localStorage.getItem("token");
-    if (!authToken) throw new Error("User not authenticated");
+async getProfile():
+Promise<UserProfile>{
 
-    const headers: Record<string, string> = { Authorization: `Bearer ${authToken}` };
+const token =
+localStorage.getItem(
+"token"
+)
 
-    // If sending FormData, remove any Content-Type so axios can set the multipart boundary.
-    if (data instanceof FormData) {
-      const res = await api.put(`${API_URL}/me`, data, {
-        headers,
-        transformRequest: [(d, h) => {
-          // delete header if present (handles axios instances with default headers)
-          if (h && h['Content-Type']) delete h['Content-Type'];
-          return d;
-        }],
-      });
-      return res.data;
-    } else {
-      // JSON request
-      headers["Content-Type"] = "application/json";
-      const res = await api.put(`${API_URL}/me`, data, { headers });
-      return res.data;
-    }
-  },
-};
+if(!token){
+
+throw new Error(
+"No token found"
+)
+
+}
+
+console.log(
+"Sending token:",
+token
+)
+
+const res =
+await axios({
+
+method:"GET",
+
+url:
+`${API}/profile/me`,
+
+headers:{
+
+Authorization:
+`Bearer ${token}`,
+
+Accept:
+"application/json"
+
+}
+
+})
+
+console.log(
+"profile response:",
+res.data
+)
+
+const profile =
+res.data
+
+return{
+
+_id:profile._id,
+
+id:profile.id,
+
+userId:profile.userId,
+
+email:profile.email,
+
+fullName:profile.fullName,
+
+nickname:profile.nickname,
+
+photoUrl:
+profile.photoUrl
+? `${API}/${profile.photoUrl.replace(/\\/g,"/")}`
+:undefined,
+
+gender:profile.gender,
+
+country:profile.country,
+
+language:profile.language,
+
+dob:profile.dob,
+
+qualification:profile.qualification,
+
+profileCompleted:
+Boolean(
+profile.profileCompleted
+),
+
+createdAt:
+profile.createdAt,
+
+updatedAt:
+profile.updatedAt,
+
+isVerified:
+profile.isVerified,
+
+role:
+"learner"
+
+}
+
+}
+
+}

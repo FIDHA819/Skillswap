@@ -1,4 +1,4 @@
-import { Category } from "../entities/Category"
+import { Category } from "../Category/entities/Category"
 
 export interface ICategoryRepository {
 

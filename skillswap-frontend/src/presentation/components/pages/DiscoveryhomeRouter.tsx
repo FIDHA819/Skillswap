@@ -1,24 +1,46 @@
-import SearchBar from "../hooks/LearnerDashboard/SearchBar"
+import "../styles/dashboard.css"
+
+import LearnerHeader from "../hooks/LearnerDashboard/LearnerHeader"
+
+import HeroSection from "../hooks/LearnerDashboard/HeroSection"
+
 import CategoriesGrid from "../hooks/LearnerDashboard/CategoriesGrid"
-import SuggestedMatches from "../hooks/LearnerDashboard/SuggestedMatches"
-import PendingRequests from "../hooks/LearnerDashboard/PendingRequest"
+
+import RecommendedVideos from "../hooks/LearnerDashboard/RecommendedVideos"
+
+import RecommendedTeachers from "../hooks/LearnerDashboard/RecommendedTeachers"
+
 import UpcomingSessions from "../hooks/LearnerDashboard/UpcomingSession"
 
-export default function DiscoveryHome(){
+import DiscoverGain from "../hooks/LearnerDashboard/DiscoverGain"
+
+import Footer from "../hooks/Footer"
+
+export default function DiscoveryHome() {
 
 return(
 
-<div className="space-y-12 p-6">
+<div className="dashboard">
 
-<SearchBar/>
+<LearnerHeader/>
+
+<main className="dashboard-main">
+
+<HeroSection/>
 
 <CategoriesGrid/>
 
-<SuggestedMatches/>
+<RecommendedVideos/>
 
-<PendingRequests/>
+<RecommendedTeachers/>
 
 <UpcomingSessions/>
+
+<DiscoverGain/>
+
+<Footer/>
+
+</main>
 
 </div>
 

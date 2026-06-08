@@ -120,7 +120,7 @@ const [timer, setTimer] = useState(() => {
 
         else {
 
-          window.location.href = "/home"
+          window.location.href = "/login"
 
         }
 

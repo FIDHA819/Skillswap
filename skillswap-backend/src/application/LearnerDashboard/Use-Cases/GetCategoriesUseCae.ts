@@ -1,5 +1,5 @@
 import { ICategoryRepository } from "../../../domain/repositories/ICategoryRepository"
-import { Category } from "../../../domain/entities/Category"
+import { Category } from "../../../domain/Category/entities/Category"
 
 export class GetCategoriesUseCase {
 

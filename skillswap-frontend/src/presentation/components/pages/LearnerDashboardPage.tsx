@@ -1,28 +1,39 @@
-import { useEffect, useState } from "react"
+import { useAuth } from "../../../contexts/AuthContext"
 import LearnerHomeRouter from "../../components/pages/LearnerhomeRouter"
 
 export default function LearnerDashboardPage() {
 
-  const [user, setUser] = useState<any>(null)
+const {
+loading,
+user
+}=useAuth()
 
-  useEffect(() => {
+if(loading){
 
-  const token = localStorage.getItem("token")
+return(
 
-  fetch("http://localhost:5000/me", {
+<div
+style={{
+height:"100vh",
+display:"grid",
+placeItems:"center"
+}}
+>
 
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+Loading...
 
-  })
-    .then(res => res.json())
-    .then(data => setUser(data))
+</div>
 
-}, [])
+)
 
-  if (!user) return <p>Loading dashboard...</p>
+}
 
-  return <LearnerHomeRouter user={user} />
+return(
+
+<LearnerHomeRouter
+user={user}
+/>
+
+)
 
 }

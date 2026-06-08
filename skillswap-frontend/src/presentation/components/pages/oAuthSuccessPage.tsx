@@ -16,16 +16,13 @@ export default function OAuthSuccessPage() {
     const token =
       params.get("token")
 
-    if (token) {
+  if (token) {
 
-      localStorage.setItem(
-        "token",
-        token
-      )
+  localStorage.setItem("token", token)
 
-      navigate("/")
+  navigate("/dashboard")
 
-    }
+}
 
   }, [])
 

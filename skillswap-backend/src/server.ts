@@ -2,9 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
+import path from "path";
 import authRoutes from './presentation/routes/auth.routes'
 import { learnerRoutes } from "./presentation/routes/learner.routes";
-
+import profileRoutes
+from "./presentation/routes/profile.routes"
+import sessionRoutes from './presentation/routes/session.routes'
+import skillRoutes from "./presentation/routes/skill.routes"
 import passport from './infrastructure/services/Passport'
 import { LearnerDashboardController } from "./presentation/controllers/LearnerDashboard.controller";
 import { connectDB } from "./infrastructure/database/mongoose-client";
@@ -20,14 +24,32 @@ app.use(cors({
 }));
 app.use(express.json()); 
 
+app.use(express.urlencoded({ extended: true }));
+
 app.use(passport.initialize())
 app.use('/',authRoutes)
 app.use("/learner",learnerRoutes)
+app.use("/profile", profileRoutes)
+app.use("/session",sessionRoutes)
+app.use("/skills",skillRoutes)
 
 
 
 
-app.use(express.urlencoded({ extended: true }));
+app.use(
+
+"/uploads",
+
+express.static(
+
+path.join(
+process.cwd(),
+"uploads"
+)
+
+)
+
+)
 
 
 

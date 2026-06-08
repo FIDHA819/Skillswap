@@ -1,15 +1,11 @@
-import ProfileSetupHome from "../hooks/LearnerDashboard/ProfileSetUpHome"
-import AddSkillsHome from "../hooks/LearnerDashboard/AddSkillHome"
-import DiscoveryHome from "./DiscoveryhomeRouter"
+import { Navigate } from "react-router-dom"
 
-export default function LearnerHomeRouter({ user }) {
+import DiscoveryHome
+from "./DiscoveryhomeRouter"
 
-if (!user.profileCompleted)
-return <ProfileSetupHome/>
 
-if (!user.skillsToTeach.length)
-return <AddSkillsHome/>
+export default function LearnerHomeRouter() {
 
-return <DiscoveryHome/>
+  return <DiscoveryHome />
 
 }

@@ -18,7 +18,7 @@ from "../../application/Auth/use-cases/oAuthLoginUseCase"
 
 import { ResetPasswordUseCase }   
 from "../../application/Auth/use-cases/ResetPasswordUseCase"
-import { GetCurrentUserUseCase } from "../../application/Auth/GetCurrentUserUseCase"
+import { GetCurrentUserUseCase } from "../../application/Auth/use-cases/GetCurrentUserUseCase"
 
 
 

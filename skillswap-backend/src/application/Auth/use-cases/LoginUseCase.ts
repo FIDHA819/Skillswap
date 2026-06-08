@@ -78,18 +78,25 @@ console.log("LOGIN EMAIL:", data.email)
 
       )
 
-    return {
+   return {
 
-      token,
+  token,
 
-      user: {
+  user: {
 
-        id: user.id,
-        email: user.email
+    id: user.id,
 
-      }
+    email: user.email,
 
-    }
+    profileCompleted:
+      user.profileCompleted,
+
+    isVerified:
+      user.isVerified
+
+  }
+
+}
 
   }
 

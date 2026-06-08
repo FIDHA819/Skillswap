@@ -1,65 +1,151 @@
 import { useState } from "react"
 
-import { LoginUser } from "../../../../application/useCase/Auth/LoginUser"
+import { LoginUser }
+from "../../../../application/useCase/Auth/LoginUser"
 
-import { AuthRepositoryImpl } from "../../../../infrastructure/repositories/AuthRepositoriesImpl"
+import { AuthRepositoryImpl }
+from "../../../../infrastructure/repositories/AuthRepositoriesImpl"
 
-import { saveToken } from "../../../../infrastructure/storage/tokenStorage"
+import { useAuth }
+from "../../../../contexts/AuthContext"
 
-const repo = new AuthRepositoryImpl()
+const repo =
+new AuthRepositoryImpl()
 
-const loginUserUseCase = new LoginUser(repo)
+const loginUserUseCase =
+new LoginUser(repo)
+
+interface LoginData {
+
+email: string
+
+password: string
+
+}
+
+type LoginResult = {
+
+success: boolean
+
+user?: {
+
+id: string
+
+email: string
+
+profileCompleted?: boolean
+
+isVerified?: boolean
+
+role?: string
+
+}
+
+}
 
 export const useLogin = () => {
 
-  const [loading, setLoading] = useState(false)
+const [
+loading,
+setLoading
+]=useState(false)
 
-  const [error, setError] = useState<string | null>(null)
+const [
+error,
+setError
+]=useState<
+string | null
+>(null)
 
-  const login = async (data) => {
+const {
+setAuth
+}=useAuth()
 
-    setLoading(true)
+const login =
+async(
+data: LoginData
+): Promise<LoginResult> => {
 
-    setError(null)
+setLoading(true)
 
-    try {
+setError(null)
 
-      const result =
-        await loginUserUseCase.execute(data)
+try{
 
-      saveToken(result.token)
+const result =
+await loginUserUseCase
+.execute(
+data
+)
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(result.user)
-      )
+if(
+!result?.token ||
+!result?.user
+){
 
-      return true
+throw new Error(
+"Invalid login response"
+)
 
-    } catch (err: any) {
+}
 
-      setError(
-        err.message || "Login failed"
-      )
+setAuth(
 
-      return false
+result.token,
 
-    } finally {
+result.user
 
-      setLoading(false)
+)
 
-    }
+return {
 
-  }
+success:true,
 
-  return {
+user:
+result.user
 
-    login,
+}
 
-    loading,
+}
 
-    error
+catch(
+err:any
+){
 
-  }
+setError(
+
+err?.message ||
+
+"Login failed"
+
+)
+
+return {
+
+success:false
+
+}
+
+}
+
+finally{
+
+setLoading(
+false
+)
+
+}
+
+}
+
+return {
+
+login,
+
+loading,
+
+error
+
+}
 
 }

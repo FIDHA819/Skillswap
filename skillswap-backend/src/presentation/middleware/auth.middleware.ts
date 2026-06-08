@@ -2,45 +2,70 @@ import { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
 
 export const authMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
+
+req: any,
+res: Response,
+next: NextFunction
+
 ) => {
 
-  const token =
-    req.headers.authorization?.split(" ")[1]
+const authHeader =
+req.headers.authorization
 
-  if (!token) {
+if (!authHeader)
 
-    return res.status(401).json({
-      message: "No token provided"
-    })
+return res.status(401).json({
 
-  }
+message: "No token provided"
 
-  try {
+})
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET!
-    ) as any
+const token =
+authHeader.split(" ")[1]
 
-    req.user = {
-      id: decoded.id,
-      email: decoded.email,
-      role: decoded.role
-    }
+try {
 
-    next()
+const decoded =
+jwt.verify(
 
-  }
+token,
 
-  catch {
+process.env.JWT_SECRET!
 
-    res.status(401).json({
-      message: "Invalid token"
-    })
+) as any
 
-  }
+req.user={
+
+id:
+decoded.id ||
+
+decoded.userId,
+
+email:
+decoded.email
+
+}
+
+console.log(
+"AUTH USER",
+req.user
+)
+
+next()
+
+
+}
+
+catch (err) {
+
+console.log("JWT ERROR:", err)
+
+return res.status(401).json({
+
+message: "Invalid token"
+
+})
+
+}
 
 }

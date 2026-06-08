@@ -1,4 +1,4 @@
-import { Skill } from "../entities/Skill"
+import { Skill } from "../Skill/entities/Skill"
 
 export interface ISkillRepository {
 

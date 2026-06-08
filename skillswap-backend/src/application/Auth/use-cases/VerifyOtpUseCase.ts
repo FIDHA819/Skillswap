@@ -11,78 +11,41 @@ export class VerifyOtpUseCase {
   ) {}
 
   async execute(data: {
+  email: string
+  otp: string
+  mode: "signup" | "reset"
+}) {
 
-    email: string
-    otp: string
-    mode: "signup" | "reset"
+  if (!data.email || !data.otp)
+    throw new AppError("Missing OTP data")
 
-  }) {
+  const user =
+    await this.userRepository.findByEmail(data.email)
 
-    if (!data.email || !data.otp)
-      throw new AppError("Missing OTP data")
+  if (!user)
+    throw new AppError("User not found", 404)
 
-    const user =
-      await this.userRepository
-        .findByEmail(data.email)
+  if (user.otp !== data.otp)
+    throw new AppError("Invalid OTP", 400)
 
-    if (!user)
-      throw new AppError(
-        "User not found",
-        404
-      )
+  if (!user.otpExpires || user.otpExpires < new Date())
+    throw new AppError("OTP expired", 400)
 
-    if (user.otp !== data.otp)
-      throw new AppError(
-        "Invalid OTP",
-        400
-      )
 
-    if (
-      !user.otpExpires ||
-      user.otpExpires < new Date()
-    )
-      throw new AppError(
-        "OTP expired",
-        400
-      )
+  /*
+  ✅ ALWAYS verify account if not already verified
+  */
 
-    // ✅ Only verify account during signup flow
-    if (data.mode === "signup") {
+  if (!user.isVerified) {
 
-      await this.userRepository.verifyUser(
-        data.email
-      )
-
-      const token =
-        jwt.sign(
-
-          { email: user.email },
-
-          process.env.JWT_SECRET!,
-
-          { expiresIn: "1d" }
-
-        )
-
-      return {
-
-        message:
-          "Account verified successfully",
-
-        token
-
-      }
-
-    }
-
-    // ✅ Reset-password flow
-    return {
-
-      message:
-        "OTP verified successfully"
-
-    }
+    await this.userRepository.verifyUser(data.email)
 
   }
 
+
+  return {
+    message: "OTP verified successfully"
+  }
+
+}
 }

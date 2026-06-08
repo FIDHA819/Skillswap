@@ -47,29 +47,54 @@ const InputField: React.FC<InputFieldProps> = ({
 
 export default function LoginPage() {
 
-    const navigate = useNavigate()
-  const { login, loading, error } = useLogin()
+  
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleLogin = async (e: FormEvent) => {
 
-    e.preventDefault()
 
-    const ok = await login({
+const navigate =
+useNavigate()
+
+const {
+
+login,
+
+loading,
+
+error
+
+}=useLogin()
+
+const handleLogin = async (
+  e: React.FormEvent
+) => {
+
+  e.preventDefault()
+
+  try {
+
+    const result = await login({
       email,
       password
     })
 
+    if (result.success) {
 
-if (ok) {
+      navigate("/dashboard", {
+        replace: true
+      })
 
-  navigate("/")
+    }
 
-}
+  } catch (error) {
+
+    console.error(error)
+
   }
 
+}
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:5000/auth/google"
   }
