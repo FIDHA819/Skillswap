@@ -16,4 +16,6 @@ export interface ISkillRepository {
     skillId: string,
     teacherId: string
   ): Promise<void>
+
+  findTeachersBySkill(skillName: string): Promise<PopulatedTeacher[]>
 }

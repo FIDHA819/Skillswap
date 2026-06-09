@@ -29,4 +29,8 @@ router.delete(
   skillController.removeMySkill.bind(skillController)
 );
 
+// skill.routes.ts  — add these two
+router.get("/all",authMiddleware,
+   SkillController.getAllSkills.bind(SkillController))
+router.get("/:skillName/teachers", SkillController.getTeachersBySkill.bind(SkillController)                                         )
 export default router;

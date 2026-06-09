@@ -112,22 +112,30 @@ const App: React.FC = () => {
         />
 
         <Route
-          path="/profile/create"
-          element={
-            <ProtectedRoute>
-              <ProfileSetupPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-path="/profile"
-element={<ViewProfile/>}
+  path="/profile/create"
+  element={
+    <ProtectedRoute>
+      <ProfileSetupPage />
+    </ProtectedRoute>
+  }
 />
 
 <Route
-path="/profile/edit"
-element={<EditProfile/>}
+  path="/profile"
+  element={
+    <ProtectedRoute>   {/* add protection */}
+      <ViewProfile />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/profile/edit"
+  element={
+    <ProtectedRoute>   {/* add protection */}
+      <EditProfile />
+    </ProtectedRoute>
+  }
 />
 
         {/* 404 */}

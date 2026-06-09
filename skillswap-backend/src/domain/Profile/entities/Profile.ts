@@ -50,5 +50,5 @@ export interface Profile{
 
   kycVerified:boolean
 
-  profileCompleted:boolean
+  profileCompleted?:boolean
 }

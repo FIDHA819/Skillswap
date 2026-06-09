@@ -2,13 +2,10 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import UserModel from "../../infrastructure/database/models/UserModel";
 import SkillModel from "../../infrastructure/database/models/SkillModel";
+import {AuthRequest} from "../../types/AuthRequest"
+import { ProfileModel } from "../../infrastructure/database/models/ProfileModel";
+ 
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-  };
-}
 
 export class SkillController {
   async getMySkills(req: AuthRequest, res: Response) {
@@ -228,4 +225,71 @@ export class SkillController {
       });
     }
   }
+  // SkillController.ts
+
+// GET /skills/all  — every skill name for the "View All" panel
+static async getAllSkills(req: Request, res: Response) {
+  try {
+    const skills = await SkillModel.find({}, "name description teachers")
+      .lean()
+    return res.json(skills)
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch skills" })
+  }
+}
+
+// GET /skills/:skillName/teachers  — teachers who teach this skill
+static async getTeachersBySkill(req: Request, res: Response) {
+  try {
+    const { skillName } = req.params
+
+    const skill = await SkillModel
+      .findOne({ name: decodeURIComponent(skillName) })
+      .populate({
+        path: "teachers",
+        select: "_id fullName email role profileCompleted"
+      })
+      .lean()
+
+    if (!skill) return res.json({ teachers: [], skill: skillName })
+
+    // Also fetch their profiles for photo/headline
+    const teacherIds = (skill.teachers as any[]).map(t => t._id)
+// console.log("SKILL:", skill)
+
+// console.log(
+//   "TEACHERS:",
+//   skill?.teachers
+// )
+
+// console.log(
+//   "TEACHER IDS:",
+//   (skill?.teachers as any[]).map(
+//     t => t._id
+//   )
+// )
+   const profiles =
+await ProfileModel.find({
+  userId: { $in: teacherIds }
+})
+.lean()
+
+// console.log(
+//   "PROFILES:",
+//   profiles
+// )
+    const profileMap = Object.fromEntries(
+      profiles.map(p => [p.userId, p])
+    )
+
+    const enriched = (skill.teachers as any[]).map(teacher => ({
+      ...teacher,
+      profile: profileMap[teacher._id.toString()] ?? null
+    }))
+
+    return res.json({ teachers: enriched, skill: skill.name })
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch teachers" })
+  }
+}
 }

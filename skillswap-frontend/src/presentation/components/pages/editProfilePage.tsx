@@ -2,8 +2,13 @@ import { useState, useRef, ChangeEvent, FormEvent,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
-  Camera, ArrowLeft, Save, User, Globe, BookOpen,
-  Calendar, Check, Loader2, AlertCircle,
+  Camera,
+  ArrowLeft,
+  Save,
+  User,
+  Globe,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { profileService } from "../../../services/profileService";
 import {
@@ -195,32 +200,31 @@ export default function EditProfile() {
     ? `${import.meta.env.VITE_API_URL ?? "http://localhost:5000"}/${user.photoUrl.replace(/\\/g, "/")}`
     : null;
 
+const [form, setForm] = useState({
+  fullName: "",
+  nickname: "",
+  email: "",
+  gender: "",
+  dob: "",
+  country: "",
+  language: "",
+  qualification: "",
+});
 useEffect(() => {
-
-  if (!user) return
+  if (!user) return;
 
   setForm({
-
     fullName: user.fullName || "",
     nickname: user.nickname || "",
     email: user.email || "",
-
     gender: user.gender || "",
-
-    dob: user.dob
-      ? user.dob.slice(0, 10)
-      : "",
-
+    dob: user.dob ? user.dob.slice(0, 10) : "",
     country: user.country || "",
-
     language: user.language || "",
+    qualification: user.qualification || "",
+  });
+}, [user]);
 
-    qualification:
-      user.qualification || ""
-
-  })
-
-}, [user])
   const [preview,  setPreview]  = useState<string | null>(null);
   const [photoFile,setPhotoFile]= useState<File | null>(null);
   const [loading,  setLoading]  = useState(false);
@@ -524,13 +528,7 @@ false
       </div>
 
       {/* ── TOAST ── */}
-      {toast && (
-        <div className={`ep-toast ep-toast--${toast.type}`}>
-          {toast.type === "success" ? <Check size={16} /> : <AlertCircle size={16} />}
-          {toast.msg}
-        </div>
-      )}
-
+    
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <ToastContainer
 
@@ -545,6 +543,3 @@ autoClose={2500}
   );
 }
 
-function setForm(arg0: { fullName: string; nickname: string; email: string; gender: string; dob: string; country: string; language: string; qualification: string; }) {
-  throw new Error("Function not implemented.");
-}

@@ -43,7 +43,7 @@ paymentDetails:String,
 
 profileCompleted:{
 type:Boolean,
-default:true
+default:false
 }
 
 },{

@@ -1,4 +1,4 @@
-import axios from "axios"
+import api from "../../../infrastructure/api/axios"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../../contexts/AuthContext"
@@ -155,8 +155,8 @@ formData.append(key, form[key])
 if (photo)
 formData.append("photo", photo)
 
-await axios.post(
-"http://localhost:5000/profile/create",
+await api.post(
+"/profile/create",
 formData,
 {
 headers:{

@@ -89,79 +89,24 @@ error.message ||
 
 }
 
-static async me(
-req:any,
-res:Response
-){
+static async me(req: any, res: Response) {
+  try {
+    const userId = req.user.id
+    const profileRepo = new ProfileRepositoryImpl()
+    const userRepo = new UserRepositoryImpl()
 
-try{
+    let profile = await profileRepo.findByUserId(userId)  // was: repo.findByUserId
 
-console.log(
-"JWT USER →",
-req.user
-)
+    if (!profile) {
+      const createProfileUseCase = new CreateProfileUseCase(profileRepo, userRepo)
+      profile = await createProfileUseCase.execute({ userId })
+    }
 
-const userId=
-req.user.id
-
-console.log(
-"SEARCH USER ID →",
-userId
-)
-
-const repo=
-new ProfileRepositoryImpl()
-
-const profile=
-
-await repo.findByUserId(
-userId
-)
-
-console.log(
-"PROFILE FOUND →",
-profile
-)
-
-if(!profile){
-
-return res
-.status(404)
-.json({
-
-message:
-"Profile not found",
-
-userId
-
-})
-
-}
-
-return res
-.status(200)
-.json(profile)
-
-}
-
-catch(error){
-
-console.log(
-"ME ERROR",
-error
-)
-
-return res
-.status(500)
-.json({
-
-message:
-"Server error"
-
-})
-
-}
-
+    return res.status(200).json(profile)
+  } catch (error) {
+    console.log("ME ERROR", error)
+    return res.status(500).json({ message: "Server error" })
+  }
 }
 
 

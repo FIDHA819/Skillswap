@@ -19,7 +19,7 @@ implements ISkillRepository {
   }
 
   async findAll(){
-    return SkillModel.find()
+    return await SkillModel.find()
   }
 
   async addTeacher(
@@ -35,4 +35,16 @@ implements ISkillRepository {
       }
     )
   }
+  async findTeachersBySkill(skillName: string): Promise<PopulatedTeacher[]> {
+  const skill = await SkillModel
+    .findOne({ name: skillName })
+    .populate({
+      path: "teachers",
+      select: "_id fullName email profileCompleted role"
+    })
+    .lean()
+
+  if (!skill) return []
+  return skill.teachers as PopulatedTeacher[]
+}
 }

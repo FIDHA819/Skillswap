@@ -62,12 +62,16 @@ user.id
 
 const profile: Profile = {
   id: crypto.randomUUID(),
-  userId: String(data.userId),
-  email: user.email,
 
-  fullName: data.fullName,
-  nickname: data.nickname,
-  photoUrl: data.photoUrl,
+  userId: String(data.userId),
+
+  email: data.email || user.email,
+
+  fullName: data.fullName || user.fullName,
+
+  nickname: data.nickname || "",
+
+  photoUrl: data.photoUrl || "",
 
   gender: data.gender,
   country: data.country,
@@ -77,15 +81,15 @@ const profile: Profile = {
 
   role: "learner",
 
-  headline: data.headline || "",
-  bio: data.bio || "",
+  headline: "",
+  bio: "",
 
-  skillsToTeach: data.skillsToTeach || [],
+  skillsToTeach: [],
 
-  experienceYears: data.experienceYears || 0,
-  hourlyRate: data.hourlyRate || 0,
+  experienceYears: 0,
+  hourlyRate: 0,
 
-  availability: data.availability || [],
+  availability: [],
 
   totalStudents: 0,
   totalSessions: 0,
