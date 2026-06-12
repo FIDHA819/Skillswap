@@ -15,7 +15,8 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="py-28 px-10">
+    <div className="bg-[#030712] text-white overflow-hidden">
+    <section className="py-28 px-10 ">
 
       <h2 className="text-3xl text-shadow-black font-bold text-center mb-16">
         How SkillSwap Works
@@ -40,6 +41,8 @@ export default function HowItWorks() {
         ))}
 
       </div>
+     
     </section>
+    </div>
   );
 }

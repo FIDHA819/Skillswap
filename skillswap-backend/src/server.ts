@@ -11,6 +11,9 @@ import sessionRoutes from './presentation/routes/session.routes'
 import skillRoutes from "./presentation/routes/skill.routes"
 import passport from './infrastructure/services/Passport'
 import { LearnerDashboardController } from "./presentation/controllers/LearnerDashboard.controller";
+import notificationRoutes from "./presentation/routes/notification.routes";
+import connectionRoutes from "./presentation/routes/connection.routes";
+import teacherPublicRoutes from "./presentation/routes/teacher.routes";
 import { connectDB } from "./infrastructure/database/mongoose-client";
 
 
@@ -28,11 +31,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize())
 app.use('/',authRoutes)
-app.use("/learner",learnerRoutes)
+// app.use("/learner",learnerRoutes)
 app.use("/profile", profileRoutes)
 app.use("/session",sessionRoutes)
 app.use("/skills",skillRoutes)
-
+app.use("/notifications", notificationRoutes);
+app.use("/connections",   connectionRoutes);
+app.use("/teacher",       teacherPublicRoutes);
 
 
 

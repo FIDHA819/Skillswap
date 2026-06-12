@@ -25,7 +25,7 @@ const steps = [
 
 export default function Timeline() {
   return (
-    <section className="py-28 px-6 md:px-10 bg-gradient-to-b from-blue-50 to-white">
+    <section className="py-28 px-6 md:px-10 bg-[#030712] text-white overflow-hidden">
 
       {/* Section Title */}
 

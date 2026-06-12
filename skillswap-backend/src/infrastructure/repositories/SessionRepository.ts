@@ -27,4 +27,11 @@ export class SessionRepository {
  async delete(id:string){
    await SessionModel.findByIdAndDelete(id)
  }
+ async findUpcomingSessions() {
+  return SessionModel.find({
+    status: "upcoming"
+  })
+  .populate("teacherId", "fullName")
+  .sort({ date: 1 });
+}
 }

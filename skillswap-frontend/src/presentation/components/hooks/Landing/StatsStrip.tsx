@@ -9,7 +9,7 @@ const stats=[
 
 return(
 
-<section className="bg-white py-16">
+<section className="bg-[#030712] text-white overflow-hidden py-16">
 
 <div className="grid grid-cols-2 md:grid-cols-4 max-w-6xl mx-auto text-center gap-8">
 

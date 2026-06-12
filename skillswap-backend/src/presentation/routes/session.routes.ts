@@ -35,5 +35,9 @@ router.delete(
  authMiddleware,
  SessionController.delete
 )
-
+router.get(
+  "/learner/upcoming",
+  authMiddleware,
+  SessionController.getLearnerUpcoming
+);
 export default router

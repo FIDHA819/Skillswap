@@ -22,6 +22,8 @@ import TeacherDashboardPage from "./presentation/components/pages/TeacherDashboa
 import EditProfile from "./presentation/components/pages/editProfilePage"
 import { useAuth } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectRoute";
+import TeacherPublicPage from "./presentation/components/pages/TeacherPublicPage";
+import ConnectedTeachers from "./presentation/components/hooks/LearnerDashboard/ConnectedTeachers";
 
 const App: React.FC = () => {
 
@@ -168,7 +170,12 @@ element={
 
 }
 
+
+
+
 />
+<Route path="/teacher/:id" element={<TeacherPublicPage />} />
+<Route path="/my-teachers" element={<ProtectedRoute><ConnectedTeachers /></ProtectedRoute>} />
 
       </Routes>
 

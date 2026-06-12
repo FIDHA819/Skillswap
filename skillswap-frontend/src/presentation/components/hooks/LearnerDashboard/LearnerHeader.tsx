@@ -2,196 +2,158 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../contexts/AuthContext";
 import {
-  Bell, MessageCircle, ChevronDown, Search,
-  LogOut, UserCircle, Pencil, Settings, Sparkles,
+  ChevronDown, Search, LogOut, UserCircle,
+  Pencil, Settings, Sparkles,
 } from "lucide-react";
+import NotificationBell from "../../../components/hooks/LearnerDashboard/NotificationBell";
 
 const CSS = `
-  .ss-header {
+  @import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@600;700&family=Syne:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+  .lh-header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     padding: 0 40px;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    transition: all 0.4s ease;
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    transition: all 0.3s ease;
   }
-  .ss-header--scrolled {
-    background: rgba(4,8,15,0.92);
+  .lh-header--scrolled {
+    background: rgba(4,8,15,0.93);
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
-  .ss-header--top {
-    background: rgba(4,8,15,0.5);
-    border-bottom: 1px solid transparent;
-  }
-  .ss-header__inner {
-    max-width: 1280px; margin: 0 auto;
-    height: 72px; display: flex; align-items: center; justify-content: space-between;
-  }
-  .ss-header__left  { display: flex; align-items: center; gap: 36px; }
-  .ss-header__right { display: flex; align-items: center; gap: 12px; }
+  .lh-header--top { background: rgba(4,8,15,0.55); border-bottom: 1px solid transparent; }
 
-  .ss-logo {
-    display: flex; align-items: center; gap: 10px; text-decoration: none;
+  .lh-inner {
+    max-width: 1280px; margin: 0 auto;
+    height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
   }
-  .ss-logo__img {
-    width: 40px; height: 40px; border-radius: 10px; object-fit: cover;
-  }
-  .ss-logo__text {
+  .lh-left  { display: flex; align-items: center; gap: 32px; }
+  .lh-right { display: flex; align-items: center; gap: 10px; }
+
+  /* logo */
+  .lh-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .lh-logo__img  { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
+  .lh-logo__text {
     font-family: 'Clash Display', sans-serif; font-weight: 700;
     font-size: 20px; color: #f8fafc; letter-spacing: -0.3px;
   }
 
-  .ss-nav { display: flex; gap: 2px; }
-  .ss-nav__link {
+  /* nav */
+  .lh-nav { display: flex; gap: 2px; }
+  .lh-nav__a {
     padding: 8px 16px; border-radius: 100px;
-    font-size: 14px; font-weight: 400; color: #94a3b8;
-    text-decoration: none; transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    background: transparent;
+    font-size: 14px; color: #94a3b8; text-decoration: none;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
   }
-  .ss-nav__link:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
+  .lh-nav__a:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
 
-  .ss-search {
+  /* search */
+  .lh-search {
     display: flex; align-items: center; gap: 10px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 100px; padding: 9px 18px;
-    width: 240px; transition: all 0.3s;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px; padding: 9px 18px; width: 220px; transition: all 0.3s;
   }
-  .ss-search:focus-within {
-    border-color: rgba(59,130,246,0.4);
-    background: rgba(59,130,246,0.05);
+  .lh-search:focus-within {
+    border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.05); width: 260px;
   }
-  .ss-search input {
+  .lh-search input {
     background: transparent; border: none; outline: none;
     font-size: 14px; color: #f8fafc; width: 100%;
     font-family: 'DM Sans', sans-serif;
   }
-  .ss-search input::placeholder { color: #64748b; }
+  .lh-search input::placeholder { color: #64748b; }
 
-  .ss-switch-btn {
+  /* switch btn */
+  .lh-switch {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
-    color: #fff; border: none;
-    padding: 9px 20px; border-radius: 100px;
+    color: #fff; border: none; padding: 9px 18px; border-radius: 100px;
     font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.3s;
-    white-space: nowrap;
+    cursor: pointer; transition: all 0.3s; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
   }
-  .ss-switch-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(59,130,246,0.35);
-  }
+  .lh-switch:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
 
-  .ss-icon-btn {
-    position: relative; width: 38px; height: 38px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.07);
-    color: #94a3b8; transition: all 0.2s;
-    text-decoration: none;
-  }
-  .ss-icon-btn:hover { color: #f8fafc; border-color: rgba(255,255,255,0.14); }
-  .ss-icon-btn__badge {
-    position: absolute; top: -6px; right: -6px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #fff; font-size: 10px; font-weight: 700;
-    width: 18px; height: 18px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 1.5px solid #04080f;
-  }
-
-  .ss-user-pill {
+  /* user pill */
+  .lh-pill {
     display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
     border-radius: 100px; padding: 4px 12px 4px 4px;
     cursor: pointer; transition: all 0.2s;
   }
-  .ss-user-pill:hover  { border-color: rgba(255,255,255,0.14); }
-  .ss-user-pill--open  { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); }
-
-  .ss-user-photo {
-    width: 32px; height: 32px; border-radius: 50%;
-    object-fit: cover; border: 1.5px solid rgba(59,130,246,0.5);
-    flex-shrink: 0;
+  .lh-pill:hover, .lh-pill--open { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+  .lh-pill__photo {
+    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid rgba(99,102,241,0.4); flex-shrink: 0;
   }
-  .ss-user-initial {
+  .lh-pill__init {
     width: 32px; height: 32px; border-radius: 50%;
-    background: rgba(59,130,246,0.18);
-    border: 1.5px solid rgba(59,130,246,0.4);
+    background: rgba(99,102,241,0.15); border: 1.5px solid rgba(99,102,241,0.35);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif; font-weight: 700;
-    font-size: 12px; color: #60a5fa; flex-shrink: 0;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; color: #818cf8; flex-shrink: 0;
   }
-  .ss-user-name {
+  .lh-pill__name {
     font-size: 13px; color: #f8fafc; font-weight: 500;
-    max-width: 90px; overflow: hidden;
-    text-overflow: ellipsis; white-space: nowrap;
+    max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-family: 'DM Sans', sans-serif;
   }
-  .ss-chevron {
-    color: #64748b; transition: transform 0.25s ease; flex-shrink: 0;
-  }
-  .ss-chevron--open { transform: rotate(180deg); }
+  .lh-chevron { color: #64748b; transition: transform 0.25s; flex-shrink: 0; }
+  .lh-chevron--open { transform: rotate(180deg); }
 
-  .ss-dropdown {
+  /* dropdown */
+  .lh-drop {
     position: absolute; right: 0; top: calc(100% + 8px);
-    width: 224px;
-    background: #111827;
+    width: 224px; background: #111827;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 16px; overflow: hidden;
-    animation: ssFadeIn 0.18s ease;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.55);
-    z-index: 200;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.55); z-index: 200;
+    animation: lhFadeIn 0.18s ease;
   }
-  @keyframes ssFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes lhFadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
 
-  .ss-dropdown__header {
+  .lh-drop__head {
     padding: 14px 16px 12px;
     border-bottom: 1px solid rgba(255,255,255,0.07);
     display: flex; align-items: center; gap: 10px;
   }
-  .ss-dropdown__photo {
-    width: 38px; height: 38px; border-radius: 50%;
-    object-fit: cover; border: 1.5px solid rgba(59,130,246,0.4); flex-shrink: 0;
+  .lh-drop__photo {
+    width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid rgba(99,102,241,0.35); flex-shrink: 0;
   }
-  .ss-dropdown__initial {
+  .lh-drop__init {
     width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(59,130,246,0.18); border: 1.5px solid rgba(59,130,246,0.35);
+    background: rgba(99,102,241,0.15); border: 1.5px solid rgba(99,102,241,0.3);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: #60a5fa;
-    flex-shrink: 0;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: #818cf8; flex-shrink: 0;
   }
-  .ss-dropdown__name {
+  .lh-drop__name {
     font-size: 13px; font-weight: 600; color: #f8fafc;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-family: 'DM Sans', sans-serif;
   }
-  .ss-dropdown__email {
-    font-size: 11px; color: #64748b;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-family: 'DM Sans', sans-serif;
+  .lh-drop__email { font-size: 11px; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .lh-drop__body { padding: 6px 0; }
+  .lh-drop__item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 10px 16px; background: transparent; border: none;
+    color: #94a3b8; font-size: 14px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s; text-align: left;
   }
-  .ss-dropdown__body { padding: 6px 0; }
-  .ss-dropdown__item {
-    display: flex; align-items: center; gap: 10px;
-    width: 100%; text-align: left;
-    padding: 10px 16px; background: transparent;
-    border: none; color: #94a3b8;
-    font-size: 14px; cursor: pointer;
+  .lh-drop__item:hover { background: rgba(255,255,255,0.05); color: #f8fafc; }
+  .lh-drop__divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 4px 0; }
+  .lh-drop__logout {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 10px 16px; background: transparent; border: none;
+    color: #f87171; font-size: 14px; cursor: pointer;
     font-family: 'DM Sans', sans-serif; transition: all 0.15s;
   }
-  .ss-dropdown__item:hover { background: rgba(255,255,255,0.05); color: #f8fafc; }
-  .ss-dropdown__divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 4px 0; }
-  .ss-dropdown__logout {
-    display: flex; align-items: center; gap: 10px;
-    width: 100%; text-align: left;
-    padding: 10px 16px; background: transparent;
-    border: none; color: #f87171;
-    font-size: 14px; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  .lh-drop__logout:hover { background: rgba(239,68,68,0.08); }
+
+  @media (max-width: 900px) {
+    .lh-header { padding: 0 16px; }
+    .lh-nav { display: none; }
+    .lh-search { width: 160px; }
+    .lh-search:focus-within { width: 180px; }
   }
-  .ss-dropdown__logout:hover { background: rgba(239,68,68,0.08); }
 `;
 
 export default function LearnerHeader() {
@@ -199,123 +161,108 @@ export default function LearnerHeader() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
-  const dropRef = useRef(null);
-  console.log(user)
+  const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   useEffect(() => {
-    const onClickOutside = (e) => {
-      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    const fn = (e: MouseEvent) => {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setDropOpen(false);
     };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  const handleLogout = () => {
-    setDropOpen(false);
-    logout();
-    navigate("/");
-  };
+  const handleLogout = () => { setDropOpen(false); logout(); navigate("/"); };
 
   const firstName = user?.fullName?.split(" ")[0] || "You";
   const initial   = user?.fullName?.charAt(0)?.toUpperCase() || "U";
 
+  const photoSrc = user?.photoUrl
+    ? `${import.meta.env.VITE_API_URL ?? "http://localhost:5000"}/${user.photoUrl.replace(/\\/g, "/")}`
+    : null;
+
   return (
     <>
       <style>{CSS}</style>
-      <header className={`ss-header ${scrolled ? "ss-header--scrolled" : "ss-header--top"}`}>
-        <div className="ss-header__inner">
+      <header className={`lh-header ${scrolled ? "lh-header--scrolled" : "lh-header--top"}`}>
+        <div className="lh-inner">
 
-          {/* ── LEFT ── */}
-          <div className="ss-header__left">
-            <Link to="/dashboard" className="ss-logo">
-              <img src="/assets/logo.png" alt="SkillSwap" className="ss-logo__img" />
-              <span className="ss-logo__text">SkillSwap</span>
+          {/* LEFT */}
+          <div className="lh-left">
+            <Link to="/dashboard" className="lh-logo">
+              <img src="/assets/logo.png" alt="SkillSwap" className="lh-logo__img" />
+              <span className="lh-logo__text">SkillSwap</span>
             </Link>
-
-            <nav className="ss-nav">
+            <nav className="lh-nav">
               {[
                 { label: "Home",        to: "/dashboard"   },
                 { label: "Explore",     to: "/explore"     },
-                { label: "Chat",        to: "/chat"        },
                 { label: "Leaderboard", to: "/leaderboard" },
               ].map(({ label, to }) => (
-                <Link key={to} to={to} className="ss-nav__link">{label}</Link>
+                <Link key={to} to={to} className="lh-nav__a">{label}</Link>
               ))}
             </nav>
           </div>
 
-          {/* ── CENTER ── */}
-          <div className="ss-search">
+          {/* CENTER */}
+          <div className="lh-search">
             <Search size={14} color="#64748b" style={{ flexShrink: 0 }} />
-            <input placeholder="Search skills…" />
+            <input placeholder="Search skills, teachers…" />
           </div>
 
-          {/* ── RIGHT ── */}
-          <div className="ss-header__right">
-            <button className="ss-switch-btn" onClick={() => navigate("/teacher/dashboard")}>
-              Switch to Teacher
+          {/* RIGHT */}
+          <div className="lh-right">
+            <button className="lh-switch" onClick={() => navigate("/teacher/dashboard")}>
+              <Sparkles size={13} /> Teach
             </button>
 
-            <Link to="/chat" className="ss-icon-btn">
-              <MessageCircle size={16} />
-              <span className="ss-icon-btn__badge">3</span>
-            </Link>
+            {/* Notification bell from context */}
+            <NotificationBell />
 
-            <Link to="/notifications" className="ss-icon-btn">
-              <Bell size={16} />
-              <span className="ss-icon-btn__badge">2</span>
-            </Link>
-
-            {/* ── USER DROPDOWN ── */}
+            {/* User dropdown */}
             <div style={{ position: "relative" }} ref={dropRef}>
               <button
-                className={`ss-user-pill ${dropOpen ? "ss-user-pill--open" : ""}`}
-                onClick={() => setDropOpen(!dropOpen)}
+                className={`lh-pill ${dropOpen ? "lh-pill--open" : ""}`}
+                onClick={() => setDropOpen((o) => !o)}
               >
-                {user?.photoUrl
-                  ? <img src={user?.photoUrl ||"/assets/default-avatar.png"}alt={user?.fullName} className="ss-user-photo" />
-                  : <div className="ss-user-initial">{initial}</div>
+                {photoSrc
+                  ? <img src={photoSrc} alt={user?.fullName} className="lh-pill__photo" />
+                  : <div className="lh-pill__init">{initial}</div>
                 }
-                <span className="ss-user-name">{firstName}</span>
-                <ChevronDown size={13} className={`ss-chevron ${dropOpen ? "ss-chevron--open" : ""}`} />
+                <span className="lh-pill__name">{firstName}</span>
+                <ChevronDown size={13} className={`lh-chevron ${dropOpen ? "lh-chevron--open" : ""}`} />
               </button>
 
               {dropOpen && (
-                <div className="ss-dropdown">
-                  {/* Profile summary */}
-                  <div className="ss-dropdown__header">
-                    {user?.photoUrl
-                      ? <img src={user?.photoUrl ||"/assets/default-avatar.png"} alt={user?.fullName} className="ss-dropdown__photo" />
-                      : <div className="ss-dropdown__initial">{initial}</div>
+                <div className="lh-drop">
+                  <div className="lh-drop__head">
+                    {photoSrc
+                      ? <img src={photoSrc} alt={user?.fullName} className="lh-drop__photo" />
+                      : <div className="lh-drop__init">{initial}</div>
                     }
                     <div style={{ overflow: "hidden" }}>
-                      <div className="ss-dropdown__name">{user?.fullName || "User"}</div>
-                      <div className="ss-dropdown__email">{user?.email || ""}</div>
+                      <div className="lh-drop__name">{user?.fullName || "User"}</div>
+                      <div className="lh-drop__email">{user?.email || ""}</div>
                     </div>
                   </div>
-
-                  {/* Menu items */}
-                  <div className="ss-dropdown__body">
-                    <button className="ss-dropdown__item" onClick={() => { setDropOpen(false); navigate("/profile"); }}>
+                  <div className="lh-drop__body">
+                    <button className="lh-drop__item" onClick={() => { setDropOpen(false); navigate("/profile"); }}>
                       <UserCircle size={15} /> View Profile
                     </button>
-                    <button className="ss-dropdown__item" onClick={() => { setDropOpen(false); navigate("/profile/edit"); }}>
+                    <button className="lh-drop__item" onClick={() => { setDropOpen(false); navigate("/profile/edit"); }}>
                       <Pencil size={15} /> Edit Profile
                     </button>
-                    <button className="ss-dropdown__item" onClick={() => { setDropOpen(false); navigate("/settings"); }}>
+                    <button className="lh-drop__item" onClick={() => { setDropOpen(false); navigate("/settings"); }}>
                       <Settings size={15} /> Settings
                     </button>
                   </div>
-
-                  <hr className="ss-dropdown__divider" />
-
-                  <button className="ss-dropdown__logout" onClick={handleLogout}>
+                  <hr className="lh-drop__divider" />
+                  <button className="lh-drop__logout" onClick={handleLogout}>
                     <LogOut size={15} /> Log out
                   </button>
                 </div>

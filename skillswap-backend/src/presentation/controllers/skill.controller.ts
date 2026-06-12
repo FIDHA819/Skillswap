@@ -8,7 +8,7 @@ import { ProfileModel } from "../../infrastructure/database/models/ProfileModel"
 
 
 export class SkillController {
-  async getMySkills(req: AuthRequest, res: Response) {
+  static async getMySkills(req: AuthRequest, res: Response) {
     try {
       if (!req.user?.id) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -35,7 +35,7 @@ export class SkillController {
     }
   }
 
-  async saveMySkills(req: AuthRequest, res: Response) {
+  static  async saveMySkills(req: AuthRequest, res: Response) {
     const session = await mongoose.startSession();
 
     try {
@@ -124,7 +124,7 @@ export class SkillController {
     }
   }
 
-  async addMySkill(req: AuthRequest, res: Response) {
+  static async addMySkill(req: AuthRequest, res: Response) {
     try {
       if (!req.user?.id) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -179,7 +179,7 @@ export class SkillController {
     }
   }
 
-  async removeMySkill(req: AuthRequest, res: Response) {
+  static  async removeMySkill(req: AuthRequest, res: Response) {
     try {
       if (!req.user?.id) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -290,6 +290,82 @@ await ProfileModel.find({
     return res.json({ teachers: enriched, skill: skill.name })
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch teachers" })
+  }
+}
+
+static async getLearnerSkills(req: any, res: Response) {
+  try {
+    const user = await UserModel
+      .findById(req.user.id)
+      .populate("skillsToLearn", "name")
+      .lean();
+    return res.json({ skillsToLearn: (user?.skillsToLearn ?? []) });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed" });
+  }
+}
+ 
+// POST /learner/my-skills  — save skills the learner wants to learn
+static async saveLearnerSkills(req: any, res: Response) {
+  try {
+    const { skills }: { skills: string[] } = req.body; // skill names
+ 
+    // Upsert each skill name into Skill collection
+    const skillDocs = await Promise.all(
+      skills.map(name =>
+        SkillModel.findOneAndUpdate(
+          { name },
+          { $setOnInsert: { name, teachers: [], learners: [] } },
+          { upsert: true, new: true }
+        )
+      )
+    );
+ 
+    const skillIds = skillDocs.map(s => s._id);
+ 
+    // Save to user.skillsToLearn
+    await UserModel.findByIdAndUpdate(req.user.id, {
+      skillsToLearn: skillIds,
+    });
+ 
+    // Add learner to each skill
+    await SkillModel.updateMany(
+      { _id: { $in: skillIds } },
+      { $addToSet: { learners: req.user.id } }
+    );
+ 
+    return res.json({ success: true, skills: skills });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to save skills" });
+  }
+}
+ 
+// GET /skills/by-name/:skillName/teachers  — teachers for a given skill (public)
+static async getTeachersBySkillName(req: any, res: Response) {
+  try {
+    const { skillName } = req.params;
+    const skill = await SkillModel
+      .findOne({ name: decodeURIComponent(skillName) })
+      .populate({ path: "teachers", select: "_id fullName email role" })
+      .lean();
+ 
+    if (!skill) return res.json({ teachers: [] });
+ 
+    const teacherIds = (skill.teachers as any[]).map(t => t._id);
+    const profiles = await ProfileModel
+      .find({ userId: { $in: teacherIds.map(String) } })
+      .lean();
+ 
+    const profileMap = Object.fromEntries(profiles.map(p => [p.userId, p]));
+ 
+    const enriched = (skill.teachers as any[]).map(t => ({
+      ...t,
+      profile: profileMap[t._id.toString()] ?? null,
+    }));
+ 
+    return res.json({ teachers: enriched });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed" });
   }
 }
 }

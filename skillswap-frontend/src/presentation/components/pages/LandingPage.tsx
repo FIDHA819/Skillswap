@@ -14,32 +14,20 @@ import CommunityHighlights from "../hooks/Landing/CommunityHighlight";
 export default function LandingPage() {
 
   return (
-<div className="relative">
+<div className="relative min-h-screen bg-[#030712] text-white overflow-hidden">
+  <AnimatedBackground />
 
-<AnimatedBackground/>
-
-<Navbar/>
-
-<HeroSection/>
-
-<SwapPreview/>
-
-<StatsStrip/>
-
-<Categories/>
-
-<Timeline/>
-
-<Comparison/>
-
-<CommunityHighlights/>
-
-<Testimonials/>
-
-<Newsletter/>
-
-<Footer/>
-
+  <Navbar />
+  <HeroSection />
+  <SwapPreview />
+  <StatsStrip />
+  <Categories />
+  <Timeline />
+  <Comparison />
+  <CommunityHighlights />
+  <Testimonials />
+  <Newsletter />
+  <Footer />
 </div>
 
 );

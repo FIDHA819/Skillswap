@@ -11,7 +11,7 @@ return (
 
 <div className="absolute inset-0 flex justify-center items-center -z-10">
 
-<div className="w-[500px] h-[500px] bg-blue-200 blur-[160px] rounded-full opacity-40"></div>
+<div className="w-[500px] h-[500px] bg-[#030712] text-white overflow-hidden"></div>
 
 </div>
 
@@ -22,7 +22,7 @@ return (
 initial={{ opacity: 0, scale: 0.9 }}
 whileInView={{ opacity: 1, scale: 1 }}
 transition={{ duration: 0.6 }}
-className="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl p-12 text-center relative"
+className="max-w-4xl mx-auto bg-[#030712] text-white shadow-2xl rounded-3xl p-12 text-center relative"
 >
 
 

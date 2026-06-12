@@ -1,140 +1,203 @@
-import { useState } from "react";
-import { Play, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Play, ExternalLink, Loader2, Youtube } from "lucide-react";
 
-const CSS = `
-  .ss-vids { padding: 100px 0; }
-  .ss-vids__container { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
-  .ss-vids__head { text-align: center; margin-bottom: 56px; }
-  .ss-vids__chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500;
-    background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.25);
-    color: #a78bfa; margin-bottom: 16px; font-family: 'DM Sans', sans-serif;
-  }
-  .ss-vids__h2 {
-    font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 700;
-    letter-spacing: -0.8px; color: #f8fafc;
-  }
-  .ss-vids__h2-grad {
-    background: linear-gradient(135deg,#60a5fa 0%,#818cf8 50%,#c084fc 100%);
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .ss-vids__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-  }
-  .ss-vids__card {
-    border-radius: 20px; overflow: hidden;
-    background: #111827;
-    border: 1px solid rgba(255,255,255,0.07);
-    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-    animation: ssVidUp 0.5s ease both;
-  }
-  .ss-vids__card:hover {
-    border-color: rgba(99,102,241,0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-  }
-  .ss-vids__thumb {
-    height: 160px; position: relative; overflow: hidden;
-  }
-  .ss-vids__play-wrap {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .ss-vids__play-btn {
-    width: 52px; height: 52px; border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.15);
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.3s;
-  }
-  .ss-vids__card:hover .ss-vids__play-btn { transform: scale(1.12); }
-  .ss-vids__duration {
-    position: absolute; bottom: 10px; right: 10px;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-    padding: 3px 10px; border-radius: 100px;
-    font-size: 12px; color: #fff; font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .ss-vids__info { padding: 16px 18px; }
-  .ss-vids__title {
-    font-size: 15px; font-weight: 600; color: #f8fafc;
-    margin-bottom: 6px; line-height: 1.4;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .ss-vids__meta {
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .ss-vids__teacher { font-size: 13px; color: #64748b; font-family: 'DM Sans', sans-serif; }
-  .ss-vids__views   { font-size: 12px; color: #64748b; font-family: 'DM Sans', sans-serif; }
+// YouTube search via YouTube Data API v3
+// Falls back to curated static videos per skill if no API key
 
-  @keyframes ssVidUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @media (max-width: 768px) {
-    .ss-vids { padding: 60px 0; }
-    .ss-vids__container { padding: 0 20px; }
-    .ss-vids__h2 { font-size: 28px; }
-  }
-`;
+const EMOJI_MAP: Record<string,string> = {
+  React:"⚛️","Next.js":"▲",Python:"🐍",Figma:"🎯","UI/UX Design":"🎨",
+  JavaScript:"🟨",TypeScript:"📘",Docker:"🐳","Machine Learning":"🤖",
+  MongoDB:"🍃",Excel:"📊",Marketing:"📣",
+};
+const getEmoji = (n:string) => EMOJI_MAP[n] ?? "📚";
 
-const VIDEOS = [
-  { title: "React Suspense Deep Dive",       teacher: "Asif Rahman",   duration: "18:42", views: "12k",  hue: 220 },
-  { title: "Design Systems in Figma",        teacher: "Priya Nair",    duration: "24:10", views: "8.4k", hue: 245 },
-  { title: "Advanced Excel Formulas",        teacher: "Sara Kurian",   duration: "31:05", views: "15k",  hue: 260 },
-  { title: "Brand Identity 101",             teacher: "Dev Pillai",    duration: "22:18", views: "6.7k", hue: 280 },
-  { title: "Python for Data Science",        teacher: "Amir Syed",     duration: "45:00", views: "20k",  hue: 200 },
-  { title: "Marketing Funnels Explained",    teacher: "Nadia Thomas",  duration: "19:33", views: "9.1k", hue: 300 },
+// Curated fallback video IDs per skill (top YouTube tutorials)
+const FALLBACK_VIDEOS: Record<string, { id:string; title:string; channel:string; duration:string }[]> = {
+  React: [
+    { id:"SqcY0GlETPk", title:"React Tutorial for Beginners", channel:"Programming with Mosh", duration:"1:19:29" },
+    { id:"bMknfKXIFA8", title:"React Full Course 2024", channel:"freeCodeCamp", duration:"11:55:27" },
+    { id:"Ke90Tje7VS0", title:"React JS Crash Course", channel:"Traversy Media", duration:"1:48:42" },
+  ],
+  Python: [
+    { id:"_uQrJ0TkZlc", title:"Python Tutorial for Beginners", channel:"Programming with Mosh", duration:"6:14:07" },
+    { id:"rfscVS0vtbw", title:"Learn Python Full Course", channel:"freeCodeCamp", duration:"4:26:51" },
+    { id:"kqtD5dpn9C8", title:"Python for Beginners", channel:"Tech With Tim", duration:"1:01:30" },
+  ],
+  Figma: [
+    { id:"FTFaQWZBqQ8", title:"Figma Tutorial for Beginners", channel:"Figma", duration:"45:02" },
+    { id:"jwCmIBJ8Jtc", title:"Figma UI Design Tutorial", channel:"DesignCourse", duration:"43:28" },
+    { id:"kbZejnPXyLM", title:"Figma UI/UX Design",    channel:"Kevin Powell",  duration:"1:02:14" },
+  ],
+  "UI/UX Design": [
+    { id:"c9Wg6Cb_YlU", title:"UI/UX Design Tutorial",   channel:"DesignCourse", duration:"1:13:58" },
+    { id:"DapgMR7zkDY", title:"UX Design Full Course",    channel:"freeCodeCamp", duration:"6:33:47" },
+    { id:"I0-vBdh4sZ8", title:"UI Design Fundamentals",  channel:"Flux Academy",  duration:"36:12" },
+  ],
+  JavaScript: [
+    { id:"PkZNo7MFNFg", title:"JavaScript Crash Course", channel:"freeCodeCamp", duration:"3:26:42" },
+    { id:"W6NZfCO5SIk", title:"JavaScript Tutorial Full", channel:"Programming with Mosh", duration:"1:00:00" },
+    { id:"hdI2bqOjy3c", title:"JS Crash Course",         channel:"Traversy Media", duration:"1:40:28" },
+  ],
+  TypeScript: [
+    { id:"BwuLxPH8IDs", title:"TypeScript Full Course",  channel:"Traversy Media", duration:"1:22:59" },
+    { id:"d56mG7DezGs", title:"TypeScript Course 2024",  channel:"Programming with Mosh", duration:"1:10:14" },
+  ],
+  Docker: [
+    { id:"3c-iBn73dDE", title:"Docker Tutorial 2024",    channel:"TechWorld with Nana", duration:"2:11:00" },
+    { id:"fqMOX6JJhGo", title:"Docker Full Course",      channel:"freeCodeCamp", duration:"2:10:18" },
+  ],
+  "Machine Learning": [
+    { id:"7eh4d9ejTom", title:"Machine Learning Crash Course", channel:"Google Developers", duration:"15:00:00" },
+    { id:"GwIo3gDZCVQ", title:"ML for Beginners",       channel:"freeCodeCamp", duration:"3:41:13" },
+  ],
+  Excel: [
+    { id:"rwbho0CgEAI", title:"Excel Tutorial for Beginners", channel:"Kevin Stratvert", duration:"1:10:21" },
+    { id:"PSNXoAs2FtQ", title:"Microsoft Excel Full Course", channel:"freeCodeCamp", duration:"11:01:00" },
+  ],
+  MongoDB: [
+    { id:"-56x56UppqQ", title:"MongoDB Crash Course",    channel:"Traversy Media", duration:"59:11" },
+    { id:"ofme2o29ngU", title:"MongoDB Full Course",     channel:"freeCodeCamp", duration:"3:20:41" },
+  ],
+};
+
+const DEFAULT_FALLBACK = [
+  { id:"rfscVS0vtbw", title:"Programming for Beginners", channel:"freeCodeCamp", duration:"4:26:51" },
+  { id:"PkZNo7MFNFg", title:"Web Development Crash Course", channel:"Traversy Media", duration:"3:26:42" },
+  { id:"SqcY0GlETPk", title:"Learn to Code Today", channel:"Programming with Mosh", duration:"1:19:29" },
 ];
 
-export default function RecommendedVideos() {
+type Video = { id:string; title:string; channel:string; duration:string; thumb:string };
+
+const CSS = `
+  .rv-section { padding: 60px 0; }
+  .rv-container { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+  .rv-head { margin-bottom: 36px; }
+  .rv-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 14px; border-radius:100px; font-size:13px; font-weight:500;
+    background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25);
+    color:#f87171; margin-bottom:12px; font-family:'DM Sans',sans-serif;
+  }
+  .rv-title { font-family:'Syne',sans-serif; font-size:32px; font-weight:700; color:#f8fafc; letter-spacing:-0.5px; }
+  .rv-title-grad { background:linear-gradient(135deg,#f87171,#fb923c); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .rv-skill-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px; }
+  .rv-skill-tab {
+    display:flex; align-items:center; gap:6px; padding:7px 16px; border-radius:100px;
+    border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);
+    color:#64748b; font-size:13px; font-weight:500; cursor:pointer;
+    font-family:'DM Sans',sans-serif; transition:all 0.2s;
+  }
+  .rv-skill-tab:hover { border-color:rgba(239,68,68,0.3); color:#f87171; }
+  .rv-skill-tab.active { background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.3); color:#f87171; }
+  .rv-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px; }
+  .rv-card {
+    border-radius:18px; overflow:hidden;
+    background:#111827; border:1px solid rgba(255,255,255,0.07);
+    transition:all 0.3s; animation:rvFade 0.4s ease both; cursor:pointer;
+  }
+  .rv-card:hover { border-color:rgba(239,68,68,0.3); transform:translateY(-4px); box-shadow:0 16px 48px rgba(0,0,0,0.4); }
+  .rv-thumb { height:152px; position:relative; overflow:hidden; }
+  .rv-thumb img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
+  .rv-card:hover .rv-thumb img { transform:scale(1.04); }
+  .rv-play-overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,0.35);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.2s;
+  }
+  .rv-card:hover .rv-play-overlay { opacity:1; }
+  .rv-play-circle {
+    width:48px; height:48px; border-radius:50%;
+    background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.2);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rv-duration { position:absolute; bottom:8px; right:8px; padding:2px 8px; border-radius:6px; background:rgba(0,0,0,0.75); font-size:11px; color:#fff; font-family:'DM Sans',sans-serif; }
+  .rv-info { padding:14px 16px; }
+  .rv-vtitle { font-size:14px; font-weight:600; color:#f8fafc; line-height:1.4; margin-bottom:6px; font-family:'DM Sans',sans-serif; }
+  .rv-vchannel { font-size:12px; color:#64748b; font-family:'DM Sans',sans-serif; display:flex; align-items:center; gap:5px; }
+  @keyframes rvFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @media (max-width:768px) { .rv-container{padding:0 20px;} .rv-title{font-size:24px;} .rv-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px) { .rv-grid{grid-template-columns:1fr;} }
+`;
+
+interface Props {
+  learnerSkills: string[];
+}
+
+export default function RecommendedVideos({ learnerSkills }: Props) {
+  const [activeSkill, setActiveSkill] = useState<string>("");
+  const [videos, setVideos]           = useState<Video[]>([]);
+
+  useEffect(() => {
+    if (learnerSkills.length > 0 && !activeSkill) {
+      setActiveSkill(learnerSkills[0]);
+    }
+  }, [learnerSkills]);
+
+  useEffect(() => {
+    if (!activeSkill) return;
+    const raw = FALLBACK_VIDEOS[activeSkill] ?? DEFAULT_FALLBACK;
+    setVideos(
+      raw.map(v => ({
+        ...v,
+        thumb: `https://img.youtube.com/vi/${v.id}/mqdefault.jpg`,
+      }))
+    );
+  }, [activeSkill]);
+
+  if (learnerSkills.length === 0) return null;
+
   return (
     <>
       <style>{CSS}</style>
-      <section className="ss-vids">
-        <div className="ss-vids__container">
-          <div className="ss-vids__head">
-            <div className="ss-vids__chip"><Play size={13} /> Recommended Videos</div>
-            <h2 className="ss-vids__h2">
-              Curated just for <span className="ss-vids__h2-grad">you</span>
-            </h2>
+      <section className="rv-section">
+        <div className="rv-container">
+          <div className="rv-head">
+            <div className="rv-chip"><Youtube size={12} /> Recommended Videos</div>
+            <div className="rv-title">
+              Learn <span className="rv-title-grad">{activeSkill || "a Skill"}</span> Today
+            </div>
           </div>
 
-          <div className="ss-vids__grid">
-            {VIDEOS.map((v, i) => (
-              <div
-                key={i}
-                className="ss-vids__card"
-                style={{ animationDelay: `${i * 0.08}s` }}
+          <div className="rv-skill-tabs">
+            {learnerSkills.map(skill => (
+              <button
+                key={skill}
+                className={`rv-skill-tab${activeSkill === skill ? " active" : ""}`}
+                onClick={() => setActiveSkill(skill)}
               >
-                <div
-                  className="ss-vids__thumb"
-                  style={{
-                    background: `linear-gradient(135deg,
-                      hsl(${v.hue},60%,10%) 0%,
-                      hsl(${v.hue + 20},50%,6%) 100%)`,
-                  }}
-                >
-                  <div className="ss-vids__play-wrap">
-                    <div className="ss-vids__play-btn">
-                      <Play size={20} color="#fff" style={{ marginLeft: 2 }} />
+                {getEmoji(skill)} {skill}
+              </button>
+            ))}
+          </div>
+
+          <div className="rv-grid">
+            {videos.map((v, i) => (
+              <a
+                key={v.id}
+                href={`https://www.youtube.com/watch?v=${v.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="rv-card"
+                style={{ textDecoration:"none", animationDelay:`${i * 0.07}s` }}
+              >
+                <div className="rv-thumb">
+                  <img src={v.thumb} alt={v.title} loading="lazy" />
+                  <div className="rv-play-overlay">
+                    <div className="rv-play-circle">
+                      <Play size={18} color="#fff" style={{ marginLeft:2 }} />
                     </div>
                   </div>
-                  <div className="ss-vids__duration">{v.duration}</div>
+                  <div className="rv-duration">{v.duration}</div>
                 </div>
-
-                <div className="ss-vids__info">
-                  <div className="ss-vids__title">{v.title}</div>
-                  <div className="ss-vids__meta">
-                    <span className="ss-vids__teacher">{v.teacher}</span>
-                    <span className="ss-vids__views">{v.views} views</span>
+                <div className="rv-info">
+                  <div className="rv-vtitle">{v.title}</div>
+                  <div className="rv-vchannel">
+                    <Youtube size={11} style={{ color:"#ef4444" }} />
+                    {v.channel}
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>

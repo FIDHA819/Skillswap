@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import { SessionRepository } from "../../infrastructure/repositories/SessionRepository"
-
+import { AuthRequest } from "../../types/AuthRequest";
+import SessionModel from "../../infrastructure/database/models/SessionModel";
 import { GoogleMeetProvider }from "../../infrastructure/services/GoogleMeetProvider"
 
 import { CreateLiveSessionUseCase }from "../../application/Session/CreateLiveSessionUseCase"
@@ -121,6 +122,23 @@ static async getLectures(
     res.status(500).json({
       message: "Failed to fetch lectures"
     })
+  }
+}
+static async getLearnerUpcoming(
+  req: Request,
+  res: Response
+) {
+  try {
+    const sessions =
+      await repo.findUpcomingSessions();
+
+    return res.json(sessions);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Failed to fetch sessions",
+    });
   }
 }
 }
